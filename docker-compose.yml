@@ -4,10 +4,10 @@ services:
     build: .
     volumes:
       - wordpress_data:/var/www/html
-      - ./src/plugins:/var/www/html/web/app/plugins
       - ./src/themes:/var/www/html/web/app/themes
-      - ./src/mu-plugins:/var/www/html/web/app/mu-plugins
-      - ./src/uploads:/var/www/html/web/app/uploads
+      # - ./src/mu-plugins:/var/www/html/web/app/mu-plugins
+      # - ./src/plugins:/var/www/html/web/app/plugins
+      # - ./src/uploads:/var/www/html/web/app/uploads
       - ./.env:/var/www/html/.env:ro
     depends_on:
       - db
@@ -24,27 +24,27 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./site.conf.template:/etc/nginx/conf.d/site.conf.template:ro
     environment:
-      - WP_HOST_NAME=${WP_HOST_NAME}
+      WP_HOST_NAME: ${WP_HOST_NAME}
     command: /bin/sh -c "rm -f /etc/nginx/conf.d/default.conf \
-            && envsubst '${WP_HOST_NAME}' < /etc/nginx/conf.d/site.conf.template > /etc/nginx/conf.d/site.conf \
-            && nginx -g 'daemon off;'"
+      && envsubst '${WP_HOST_NAME}' < /etc/nginx/conf.d/site.conf.template > /etc/nginx/conf.d/site.conf \
+      && nginx -g 'daemon off;'"
 
   db:
     image: mysql:5.7.28
     volumes:
       - db_data:/var/lib/mysql
     environment:
-      - MYSQL_DATABASE=${DB_NAME}
-      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
 
-  # phpmyadmin:
-  #   image: phpmyadmin/phpmyadmin
-  #   depends_on:
-  #     - db
-  #   ports:
-  #    - 8080:80
-  #   environment:
-  #     - MYSQL_ROOT_PASSWORD=$DB_PASSWORD
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    depends_on:
+      - db
+    ports:
+      - ${PMA_PORT}:80
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
 
 volumes:
   wordpress_data: {}
